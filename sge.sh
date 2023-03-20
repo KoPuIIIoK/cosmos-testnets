@@ -16,24 +16,24 @@ sleep 2
 
 
 # set vars
-if [ ! $SGE_NODENAME ]; then
-	read -p "Enter node name: " SGE_NODENAME
-	echo 'export SGE_NODENAME='$SGE_NODENAME >> $HOME/.bash_profile
+if [ ! $SGE_MONIKER ]; then
+	read -p "Enter node name: " SGE_MONIKER
+	echo 'export SGE_MONIKER='$SGE_MONIKER >> $HOME/.bash_profile
 fi
-read -p "Enter node port: " SGE_PORT
-echo 'export SGE_PORT='$SGE_PORT >> $HOME/.bash_profile
+read -p "Enter node port: " SGE_PORTS
+echo 'export SGE_PORTS='$SGE_PORTS >> $HOME/.bash_profile
 if [ ! $WALLET ]; then
 	echo "export WALLET=wallet" >> $HOME/.bash_profile
 fi
-echo "export SGE_CHAIN_ID=sge-network-2" >> $HOME/.bash_profile
-echo "export SGE_PORT=${SGE_PORT}" >> $HOME/.bash_profile
+echo "export SGE_CHAINID=sge-network-2" >> $HOME/.bash_profile
+echo "export SGE_PORTS=${SGE_PORTS}" >> $HOME/.bash_profile
 source $HOME/.bash_profile
 
 echo '================================================='
-echo -e "Your node name: \e[1m\e[32m$SGE_NODENAME\e[0m"
+echo -e "Your node name: \e[1m\e[32m$SGE_MONIKER\e[0m"
 echo -e "Your wallet name: \e[1m\e[32m$WALLET\e[0m"
-echo -e "Your chain name: \e[1m\e[32m$SGE_CHAIN_ID\e[0m"
-echo -e "Your port: \e[1m\e[32m$SGE_PORT\e[0m"
+echo -e "Your chain name: \e[1m\e[32m$SGE_CHAINID\e[0m"
+echo -e "Your port: \e[1m\e[32m$SGE_PORTS\e[0m"
 echo '================================================='
 sleep 2
 
@@ -70,12 +70,12 @@ make install
 
 
 # config
-sged config chain-id $SGE_CHAIN_ID
+sged config chain-id $SGE_CHAINID
 sged config keyring-backend test
-sged config node tcp://localhost:${SGE_PORT}657
+sged config node tcp://localhost:${SGE_PORTS}657
 
 # init
-sged init $SGE_NODENAME --chain-id $SGE_CHAIN_ID
+sged init $SGE_MONIKER --chain-id $SGE_CHAINID
 
 
 # download genesis and addrbook
@@ -83,8 +83,8 @@ wget -O $HOME/.sge/config/genesis.json "https://raw.githubusercontent.com/sge-ne
 
 # set custom ports
 
-sed -i.bak -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:${SGE_PORT}658\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:${SGE_PORT}657\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:${SGE_PORT}060\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:${SGE_PORT}656\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":${SGE_PORT}660\"%" $HOME/.sge/config/config.toml
-sed -i.bak -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://0.0.0.0:${SGE_PORT}317\"%; s%^address = \":8080\"%address = \":${SGE_PORT}080\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:${SGE_PORT}090\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:${SGE_PORT}091\"%" $HOME/.sge/config/app.toml
+sed -i.bak -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:${SGE_PORTS}658\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:${SGE_PORTS}657\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:${SGE_PORTS}060\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:${SGE_PORTS}656\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":${SGE_PORTS}660\"%" $HOME/.sge/config/config.toml
+sed -i.bak -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://0.0.0.0:${SGE_PORTS}317\"%; s%^address = \":8080\"%address = \":${SGE_PORTS}080\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:${SGE_PORTS}090\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:${SGE_PORTS}091\"%" $HOME/.sge/config/app.toml
 
 # config pruning
 pruning="custom" && \
@@ -140,4 +140,4 @@ sudo systemctl restart sged
 
 echo '=============== SETUP FINISHED ==================='
 echo -e 'To check logs: \e[1m\e[32mjournalctl -u sged -f -o cat\e[0m'
-echo -e "To check sync status: \e[1m\e[32mcurl -s localhost:${SGE_PORT}657/status | jq .result.sync_info\e[0m"
+echo -e "To check sync status: \e[1m\e[32mcurl -s localhost:${SGE_PORTS}657/status | jq .result.sync_info\e[0m"
