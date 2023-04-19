@@ -43,7 +43,7 @@ wget -O $HOME/.cascadiad/config/genesis.json "https://anode.team/Cascadia/test/g
 wget -O $HOME/.cascadiad/config/addrbook.json "https://anode.team/Cascadia/test/addrbook.json"
 
 EXADDRESS=$(wget -qO- eth0.me)
-sed -i.bak -e "s/^external_address *=.*/external_address = \"$EXADDRESS:${PORT_CASCADIA}656\"/" $HOME/.cascadiad/config/config.toml
+sed -i.bak -e "s/^external_address *=.*/external_address = \"$EXADDRESS:${CASCAD_PORT}656\"/" $HOME/.cascadiad/config/config.toml
 PEERS="1d61222b7b8e180aacebfd57fbd2d8ab95ebdc4c@65.109.93.152:35656"
 sed -i.bak -e "s/^persistent_peers *=.*/persistent_peers = \"$PEERS\"/" $HOME/.cascadiad/config/config.toml
 SEEDS=""
@@ -52,8 +52,8 @@ sed -i 's/max_num_inbound_peers =.*/max_num_inbound_peers = 50/g' $HOME/.cascadi
 sed -i 's/max_num_outbound_peers =.*/max_num_outbound_peers = 25/g' $HOME/.cascadiad/config/config.toml
 sed -i -e "s/^filter_peers *=.*/filter_peers = \"true\"/" $HOME/.cascadiad/config/config.toml
 
-sed -i.bak -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:${PORT_CASCADIA}658\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:${PORT_CASCADIA}657\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:${PORT_CASCADIA}060\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:${PORT_CASCADIA}656\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":${PORT_CASCADIA}660\"%" $HOME/.cascadiad/config/config.toml
-sed -i.bak -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://0.0.0.0:${PORT_CASCADIA}317\"%; s%^address = \":8080\"%address = \":${PORT_CASCADIA}080\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:${PORT_CASCADIA}090\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:${PORT_CASCADIA}091\"%" $HOME/.cascadiad/config/app.toml
+sed -i.bak -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:${CASCAD_PORT}658\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:${CASCAD_PORT}657\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:${CASCAD_PORT}060\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:${CASCAD_PORT}656\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":${CASCAD_PORT}660\"%" $HOME/.cascadiad/config/config.toml
+sed -i.bak -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://0.0.0.0:${CASCAD_PORT}317\"%; s%^address = \":8080\"%address = \":${CASCAD_PORT}080\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:${CASCAD_PORT}090\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:${CASCAD_PORT}091\"%" $HOME/.cascadiad/config/app.toml
 
 # config pruning
 pruning="custom"
