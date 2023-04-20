@@ -12,7 +12,7 @@ NODE_HOME=~/.neutrond
 NODE_MONIKER=node
 SERVICE_NAME=neutrond
 SERVICE_VERSION="v0.4.2"
-STATE_SYNC=false
+STATE_SYNC=true
 # ***
 
 CHAIN_BINARY='neutrond'
