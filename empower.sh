@@ -16,9 +16,9 @@ sleep 2
 
 
 # set vars
-if [ ! $EMP_NODENAME ]; then
-	read -p "Enter node name: " EMP_NODENAME
-	echo 'export EMP_NODENAME='$EMP_NODENAME >> $HOME/.bash_profile
+if [ ! $EMPOWER_NODENAME ]; then
+	read -p "Enter node name: " EMPOWER_NODENAME
+	echo 'export EMPOWER_NODENAME='$EMPOWER_NODENAME >> $HOME/.bash_profile
 fi
 read -p "Enter node port: " EMP_PORT
 echo 'export EMP_PORT='$EMP_PORT >> $HOME/.bash_profile
@@ -30,7 +30,7 @@ echo "export EMP_PORT=${EMP_PORT}" >> $HOME/.bash_profile
 source $HOME/.bash_profile
 
 echo '================================================='
-echo -e "Your node name: \e[1m\e[32m$EMP_NODENAME\e[0m"
+echo -e "Your node name: \e[1m\e[32m$EMPOWER_NODENAME\e[0m"
 echo -e "Your wallet name: \e[1m\e[32m$WALLET\e[0m"
 echo -e "Your chain name: \e[1m\e[32m$EMP_CHAIN_ID\e[0m"
 echo -e "Your port: \e[1m\e[32m$EMP_PORT\e[0m"
@@ -71,7 +71,7 @@ empowerd config keyring-backend test
 empowerd config node tcp://localhost:${EMP_PORT}657
 
 # init
-empowerd init $EMP_NODENAME --chain-id $EMP_CHAIN_ID
+empowerd init $EMPOWER_NODENAME --chain-id $EMP_CHAIN_ID
 
 
 # download genesis and addrbook
