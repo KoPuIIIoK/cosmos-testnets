@@ -16,24 +16,24 @@ sleep 2
 
 
 # set vars
-if [ ! $EMPOWER_NODENAME ]; then
-	read -p "Enter node name: " EMPOWER_NODENAME
-	echo 'export EMPOWER_NODENAME='$EMPOWER_NODENAME >> $HOME/.bash_profile
+if [ ! $EMP_MONIKER ]; then
+	read -p "Enter node name: " EMP_MONIKER
+	echo 'export EMP_MONIKER='$EMP_MONIKER >> $HOME/.bash_profile
 fi
-read -p "Enter node port: " EMP_PORT
-echo 'export EMP_PORT='$EMP_PORT >> $HOME/.bash_profile
+read -p "Enter node port: " EMPOWER_PORT
+echo 'export EMPOWER_PORT='$EMPOWER_PORT >> $HOME/.bash_profile
 if [ ! $WALLET ]; then
 	echo "export WALLET=wallet" >> $HOME/.bash_profile
 fi
 echo "export EMP_CHAIN_ID=circulus-1" >> $HOME/.bash_profile
-echo "export EMP_PORT=${EMP_PORT}" >> $HOME/.bash_profile
+echo "export EMPOWER_PORT=${EMPOWER_PORT}" >> $HOME/.bash_profile
 source $HOME/.bash_profile
 
 echo '================================================='
-echo -e "Your node name: \e[1m\e[32m$EMPOWER_NODENAME\e[0m"
+echo -e "Your node name: \e[1m\e[32m$EMP_MONIKER\e[0m"
 echo -e "Your wallet name: \e[1m\e[32m$WALLET\e[0m"
 echo -e "Your chain name: \e[1m\e[32m$EMP_CHAIN_ID\e[0m"
-echo -e "Your port: \e[1m\e[32m$EMP_PORT\e[0m"
+echo -e "Your port: \e[1m\e[32m$EMPOWER_PORT\e[0m"
 echo '================================================='
 sleep 2
 
@@ -68,10 +68,10 @@ chmod +x ./build/empowerd && mv ./build/empowerd /usr/local/bin/empowerd
 # config
 empowerd config chain-id $EMP_CHAIN_ID
 empowerd config keyring-backend test
-empowerd config node tcp://localhost:${EMP_PORT}657
+empowerd config node tcp://localhost:${EMPOWER_PORT}657
 
 # init
-empowerd init $EMPOWER_NODENAME --chain-id $EMP_CHAIN_ID
+empowerd init $EMP_MONIKER --chain-id $EMP_CHAIN_ID
 
 
 # download genesis and addrbook
@@ -84,8 +84,8 @@ sed -i -e "s/^seeds *=.*/seeds = \"$SEEDS\"/; s/^persistent_peers *=.*/persisten
 
 # set custom ports
 
-sed -i.bak -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:${EMP_PORT}658\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:${EMP_PORT}657\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:${EMP_PORT}060\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:${EMP_PORT}656\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":${EMP_PORT}660\"%" $HOME/.empowerchain/config/config.toml
-sed -i.bak -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://0.0.0.0:${EMP_PORT}317\"%; s%^address = \":8080\"%address = \":${EMP_PORT}080\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:${EMP_PORT}090\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:${EMP_PORT}091\"%" $HOME/.empowerchain/config/app.toml
+sed -i.bak -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:${EMPOWER_PORT}658\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:${EMPOWER_PORT}657\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:${EMPOWER_PORT}060\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:${EMPOWER_PORT}656\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":${EMPOWER_PORT}660\"%" $HOME/.empowerchain/config/config.toml
+sed -i.bak -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://0.0.0.0:${EMPOWER_PORT}317\"%; s%^address = \":8080\"%address = \":${EMPOWER_PORT}080\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:${EMPOWER_PORT}090\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:${EMPOWER_PORT}091\"%" $HOME/.empowerchain/config/app.toml
 
 # config pruning
 pruning="custom"
@@ -132,4 +132,4 @@ sudo systemctl restart empowerd
 
 echo '=============== SETUP FINISHED ==================='
 echo -e 'To check logs: \e[1m\e[32mjournalctl -u empowerd -f -o cat\e[0m'
-echo -e "To check sync status: \e[1m\e[32mcurl -s localhost:${EMP_PORT}657/status | jq .result.sync_info\e[0m"
+echo -e "To check sync status: \e[1m\e[32mcurl -s localhost:${EMPOWER_PORT}657/status | jq .result.sync_info\e[0m"
