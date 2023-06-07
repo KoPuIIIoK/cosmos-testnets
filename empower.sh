@@ -97,9 +97,13 @@ sed -i -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$pruning_keep_rec
 sed -i -e "s/^pruning-keep-every *=.*/pruning-keep-every = \"$pruning_keep_every\"/" $HOME/.empowerchain/config/app.toml
 sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"$pruning_interval\"/" $HOME/.empowerchain/config/app.toml
 
-
-# reset
-empowerd tendermint unsafe-reset-all
+# reset and download snapshot
+empowerd tendermint unsafe-reset-all --home $HOME/.empowerchain
+if curl -s --head curl https://testnet-files.itrocket.net/empower/snap_empower.tar.lz4 | head -n 1 | grep "200" > /dev/null; then
+  curl https://testnet-files.itrocket.net/empower/snap_empower.tar.lz4 | lz4 -dc - | tar -xf - -C $HOME/.empowerchain
+    else
+  echo no have snap
+fi
 
 wget -O $HOME/.empowerchain/config/addrbook.json "https://services.circulus-1.empower.aviaone.com/addrbook.json"
 
