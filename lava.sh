@@ -3,21 +3,21 @@
 sleep 2
 
 # set vars
-if [ ! $NODENAME ]; then
-	read -p "Enter node name: " NODENAME
-	echo 'export NODENAME='$NODENAME >> $HOME/.bash_profile
+if [ ! $LAV_NODENAME ]; then
+	read -p "Enter node name: " LAV_NODENAME
+	echo 'export LAV_NODENAME='$LAV_NODENAME >> $HOME/.bash_profile
 fi
 LAVA_PORT=18
-if [ ! $WALLET ]; then
-	echo "export WALLET=wallet" >> $HOME/.bash_profile
+if [ ! $LAV_WALLET ]; then
+	echo "export LAV_WALLET=LAV_WALLET" >> $HOME/.bash_profile
 fi
 echo "export LAVA_CHAIN_ID=lava-testnet-1" >> $HOME/.bash_profile
 echo "export LAVA_PORT=${LAVA_PORT}" >> $HOME/.bash_profile
 source $HOME/.bash_profile
 
 echo '================================================='
-echo -e "Your node name: \e[1m\e[32m$NODENAME\e[0m"
-echo -e "Your wallet name: \e[1m\e[32m$WALLET\e[0m"
+echo -e "Your node name: \e[1m\e[32m$LAV_NODENAME\e[0m"
+echo -e "Your LAV_WALLET name: \e[1m\e[32m$LAV_WALLET\e[0m"
 echo -e "Your chain name: \e[1m\e[32m$LAVA_CHAIN_ID\e[0m"
 echo -e "Your port: \e[1m\e[32m$LAVA_PORT\e[0m"
 echo '================================================='
@@ -74,7 +74,7 @@ $lavad_home_folder/cosmovisor/genesis/bin/lavad config keyring-backend test
 $lavad_home_folder/cosmovisor/genesis/bin/lavad config node tcp://localhost:${LAVA_PORT}657
 
 # init
-$lavad_home_folder/cosmovisor/genesis/bin/lavad init $NODENAME --chain-id $LAVA_CHAIN_ID --home $lavad_home_folder --overwrite
+$lavad_home_folder/cosmovisor/genesis/bin/lavad init $LAV_NODENAME --chain-id $LAVA_CHAIN_ID --home $lavad_home_folder --overwrite
 
 cp genesis_json/genesis.json $lava_config_folder/genesis.json
 
