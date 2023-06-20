@@ -30,7 +30,7 @@ echo -e "Your port: \e[1m\e[32m$CASCAD_PORT\e[0m"
 
 git clone https://github.com/cascadiafoundation/cascadia
 cd cascadia 
-git checkout v0.1.1 
+git checkout v0.1.2 
 make install
 
 cascadiad config chain-id cascadia_6102-1
