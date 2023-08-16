@@ -11,7 +11,7 @@ LAVA_PORT=18
 if [ ! $LAV_WALLET ]; then
 	echo "export LAV_WALLET=LAV_WALLET" >> $HOME/.bash_profile
 fi
-echo "export LAVA_CHAIN_ID=lava-testnet-1" >> $HOME/.bash_profile
+echo "export LAVA_CHAIN_ID=lava-testnet-2" >> $HOME/.bash_profile
 echo "export LAVA_PORT=${LAVA_PORT}" >> $HOME/.bash_profile
 source $HOME/.bash_profile
 
@@ -34,7 +34,7 @@ sudo apt install -y unzip logrotate git jq sed wget curl coreutils systemd
 
 
 # install go
-ver="1.18.2"
+ver="1.20.5"
 cd $HOME
 wget "https://golang.org/dl/go$ver.linux-amd64.tar.gz"
 sudo rm -rf /usr/local/go
@@ -61,7 +61,7 @@ unzip cosmovisor-upgrades.zip
 cp -r cosmovisor-upgrades/* $lavad_home_folder/cosmovisor
 echo "# Setup Cosmovisor" >> ~/.profile
 echo "export DAEMON_NAME=lavad" >> ~/.profile
-echo "export CHAIN_ID=lava-testnet-1" >> ~/.profile
+echo "export CHAIN_ID=lava-testnet-2" >> ~/.profile
 echo "export DAEMON_HOME=$HOME/.lava" >> ~/.profile
 echo "export DAEMON_ALLOW_DOWNLOAD_BINARIES=true" >> ~/.profile
 echo "export DAEMON_LOG_BUFFER_SIZE=512" >> ~/.profile
