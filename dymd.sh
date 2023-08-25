@@ -42,8 +42,8 @@ mv build/dymd $HOME/.dymension/cosmovisor/genesis/bin/
 rm -rf build
 
 # Create application symlinks
-ln -s $HOME/.dymension/cosmovisor/genesis $HOME/.dymension/cosmovisor/current
-sudo ln -s $HOME/.dymension/cosmovisor/current/bin/dymd /usr/local/bin/dymd
+sudo ln -s $HOME/.dymension/cosmovisor/genesis $HOME/.dymension/cosmovisor/current -f
+sudo ln -s $HOME/.dymension/cosmovisor/current/bin/dymd /usr/local/bin/dymd -f
 
 
 # Download and install Cosmovisor
