@@ -38,7 +38,7 @@ make build
 
 # Prepare binaries for Cosmovisor
 mkdir -p $HOME/.dymension/cosmovisor/genesis/bin
-mv bin/dymd $HOME/.dymension/cosmovisor/genesis/bin/
+mv build/dymd $HOME/.dymension/cosmovisor/genesis/bin/
 rm -rf build
 
 # Create application symlinks
