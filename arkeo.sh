@@ -1,114 +1,93 @@
 #!/bin/bash
-exists()
-{
-  command -v "$1" >/dev/null 2>&1
-}
-if exists curl; then
-echo ''
-else
-  sudo apt update && sudo apt install curl -y < "/dev/null"
-fi
-bash_profile=$HOME/.bash_profile
-if [ -f "$bash_profile" ]; then
-    . $HOME/.bash_profile
-fi
-sleep 1 && curl -s https://api.nodes.guru/logo.sh | bash && sleep 1
 
-NODE=Arkeo
-NODE_HOME=$HOME/.arkeo
-BINARY=arkeod
-CHAIN_ID=arkeo
-echo 'export CHAIN_ID='\"${CHAIN_ID}\" >> $HOME/.bash_profile
+# Prompt for the moniker
+read -p "Enter your moniker (a short name for your node): " MONIKERARK
 
-if [ ! $VALIDATOR ]; then
-    read -p "Enter validator name: " VALIDATOR
-    echo 'export VALIDATOR='\"${VALIDATOR}\" >> $HOME/.bash_profile
-fi
-echo 'source $HOME/.bashrc' >> $HOME/.bash_profile
-source $HOME/.bash_profile
-sleep 1
-cd $HOME
-sudo apt update
-sudo apt install make clang pkg-config lz4 libssl-dev build-essential git jq ncdu bsdmainutils htop -y < "/dev/null"
+# Check if the MONIKER is empty and prompt again until it's not empty
+while [ -z "$MONIKERARK" ]; do
+    read -p "Moniker cannot be empty. Please enter your moniker: " MONIKERARK
+done
 
-echo -e '\n\e[42mInstall Go\e[0m\n' && sleep 1
-cd $HOME
-if [ ! -f "/usr/local/go/bin/go" ]; then
-    VERSION=1.21.1
-    wget -O go.tar.gz https://go.dev/dl/go$VERSION.linux-amd64.tar.gz
-    sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go.tar.gz && rm go.tar.gz
-    echo 'export GOROOT=/usr/local/go' >> $HOME/.bash_profile
-    echo 'export GOPATH=$HOME/go' >> $HOME/.bash_profile
-    echo 'export GO111MODULE=on' >> $HOME/.bash_profile
-    echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> $HOME/.bash_profile && . $HOME/.bash_profile
-    go version
-fi
+# Install dependencies
+echo "Installing dependencies..."
+sudo apt -q update
+sudo apt -qy install curl git jq lz4 build-essential
+sudo apt -qy upgrade
 
-echo -e '\n\e[42mInstall software\e[0m\n' && sleep 1
+# Install Go
+echo "Installing Go..."
+sudo rm -rf /usr/local/go
+curl -Ls https://go.dev/dl/go1.20.8.linux-amd64.tar.gz | sudo tar -xzf - -C /usr/local
+eval $(echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee /etc/profile.d/golang.sh)
+eval $(echo 'export PATH=$PATH:$HOME/go/bin' | tee -a $HOME/.profile)
+
+# Download binaries
+echo "Downloading binaries..."
 cd $HOME
 rm -rf arkeod
-wget -O arkeod https://snapshots.nodes.guru/arkeo/arkeod
-sudo chmod +x $HOME/arkeod
-sudo mv $HOME/arkeod /usr/local/bin/arkeod || exit
-sleep 1
-$BINARY init "$VALIDATOR" --chain-id $CHAIN_ID
-SEEDS="20e1000e88125698264454a884812746c2eb4807@seeds.lavenderfive.com:22856,df0561c0418f7ae31970a2cc5adaf0e81ea5923f@arkeo-testnet-seed.itrocket.net:18656"
-sed -i.bak -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0.001uarkeo\"/" $NODE_HOME/config/app.toml
-sed -i.bak -e "s/^seeds *=.*/seeds = \"$SEEDS\"/" $NODE_HOME/config/config.toml
-pruning="custom"
-pruning_keep_recent="100"
-pruning_keep_every="0"
-pruning_interval="10"
-sed -i -e "s/^pruning *=.*/pruning = \"$pruning\"/" $NODE_HOME/config/app.toml
-sed -i -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$pruning_keep_recent\"/" $NODE_HOME/config/app.toml
-sed -i -e "s/^pruning-keep-every *=.*/pruning-keep-every = \"$pruning_keep_every\"/" $NODE_HOME/config/app.toml
-sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"$pruning_interval\"/" $NODE_HOME/config/app.toml
-sed -i -e "s/indexer *=.*/indexer = \"null\"/g" $NODE_HOME/config/config.toml
+wget https://testnet-files.itrocket.net/arkeo/arkeod
+chmod +x arkeod
+mv arkeod /root/go/bin/
+arkeod version
 
-wget -O $HOME/.arkeo/config/genesis.json https://snapshots.nodes.guru/arkeo/genesis.json
-$BINARY tendermint unsafe-reset-all
-
-
-echo -e '\n\e[42mDownloading a snapshot\e[0m\n' && sleep 1
-curl https://snapshots.nodes.guru/arkeo/arkeo.tar.lz4 | lz4 -dc - | tar -xf - -C $HOME/.arkeo
-
-echo -e '\n\e[42mRunning\e[0m\n' && sleep 1
-echo -e '\n\e[42mCreating a service\e[0m\n' && sleep 1
-
-echo "[Unit]
-Description=$NODE Node
-After=network.target
+# Create service
+echo "Creating systemd service..."
+sudo tee /etc/systemd/system/arkeod.service > /dev/null << EOF
+[Unit]
+Description=Arkeo testnet
+After=network-online.target
 
 [Service]
 User=$USER
-Type=simple
-ExecStart=/usr/local/bin/$BINARY start 
+ExecStart=$(which arkeod) start
 Restart=on-failure
+RestartSec=3
 LimitNOFILE=65535
 
 [Install]
-WantedBy=multi-user.target" > $HOME/$BINARY.service
-sudo mv $HOME/$BINARY.service /etc/systemd/system
-sudo tee <<EOF >/dev/null /etc/systemd/journald.conf
-Storage=persistent
+WantedBy=multi-user.target
 EOF
-
-
-sed -i -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:15958\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:15957\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:15960\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:15956\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":15966\"%" $HOME/.arkeo/config/config.toml
-sed -i -e "s%^address = \"tcp://localhost:1317\"%address = \"tcp://0.0.0.0:15917\"%; s%^address = \":8080\"%address = \":15980\"%; s%^address = \"localhost:9090\"%address = \"0.0.0.0:15990\"%; s%^address = \"localhost:9091\"%address = \"0.0.0.0:15991\"%; s%:8545%:15945%; s%:8546%:15946%; s%:6065%:15965%" $HOME/.arkeo/config/app.toml
-
-
-echo -e '\n\e[42mRunning a service\e[0m\n' && sleep 1
-sudo systemctl restart systemd-journald
 sudo systemctl daemon-reload
-sudo systemctl enable $BINARY
-sudo systemctl restart $BINARY
+sudo systemctl enable arkeod
 
-echo -e '\n\e[42mCheck node status\e[0m\n' && sleep 1
-if [[ `service $BINARY status | grep active` =~ "running" ]]; then
-  echo -e "Your $NODE node \e[32minstalled and works\e[39m!"
-  echo -e "You can check node status by the command \e[7mservice $BINARY status\e[0m"
-  echo -e "Press \e[7mQ\e[0m for exit from status menu"
-else
-  echo -e "Your $NODE node \e[31mwas not installed correctly\e[39m, please reinstall."
-fi
+# Initialize the node
+echo "Initializing the node..."
+arkeod config chain-id arkeo
+arkeod config keyring-backend test
+arkeod config node tcp://localhost:18657
+arkeod init $MONIKER --chain-id arkeo
+
+# Download genesis and addrbook
+echo "Downloading genesis and addrbook..."
+wget -O $HOME/.arkeo/config/genesis.json https://testnet-files.itrocket.net/arkeo/genesis.json
+wget -O $HOME/.arkeo/config/addrbook.json https://testnet-files.itrocket.net/arkeo/addrbook.json
+
+# Add seeds
+PEERS="5c3ca78b11bbd746f950c198cac51d4e5d4c0750@arkeo-testnet-peer.itrocket.net:18656,769de3fabb66d2dcbae7550ce7252f6f469c5d3f@65.108.126.188:26856,e033753cac027fc6605a95dab3b3fc5550d4b9bf@65.109.84.33:40656,25a9af68f987e254e50d6d7e6a1e68a5a40c1b7c@65.109.92.148:60556,6ae2136893a08a412f0c02eab8d595d502cd5457@65.108.206.118:36656,f970798283d0460832f6c964569ca894a4b6218e@65.108.124.121:61056,be71f456a7aa3da953db899298b53d28b75f4676@65.108.229.93:37656,b487e892071fd3d89cc9d0de60eeed60ba7c4e5c@65.109.116.119:15756,893a44b8501faa22fbe2f4d61c6586f231bd1638@65.109.28.177:33656,8c2d799bcc4fbf44ef34bbd2631db5c3f4619e41@213.239.207.175:60656,8e7c1c3d2416acf5fc9c9b6b74a8d9f53db1f567@94.130.220.233:26646,a2130910e8f8a04888b9b01a372fa1e74ab50b3a@62.171.130.196:11156"
+sed -i 's|^persistent_peers *=.*|persistent_peers = "'$PEERS'"|' $HOME/.arkeo/config/config.toml
+sed -i -e "s|^seeds *=.*|seeds = \"\"|" $HOME/.arkeo/config/config.toml
+
+# Set minimum gas price
+sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0uarkeo\"/" $HOME/.arkeo/config/app.toml
+sed -i -e "s/^indexer *=.*/indexer = \"null\"/" $HOME/.arkeo/config/config.toml
+
+# Set pruning
+sed -i \
+  -e 's|^pruning *=.*|pruning = "custom"|' \
+  -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
+  -e 's|^pruning-keep-every *=.*|pruning-keep-every = "0"|' \
+  -e 's|^pruning-interval *=.*|pruning-interval = "19"|' \
+  $HOME/.arkeo/config/app.toml
+
+# Set custom ports
+sed -i -e "s%^proxy_app = \"tcp://127.0.0.1:26658\"%proxy_app = \"tcp://127.0.0.1:18658\"%; s%^laddr = \"tcp://127.0.0.1:26657\"%laddr = \"tcp://127.0.0.1:18657\"%; s%^pprof_laddr = \"localhost:6060\"%pprof_laddr = \"localhost:18660\"%; s%^laddr = \"tcp://0.0.0.0:26656\"%laddr = \"tcp://0.0.0.0:18656\"%; s%^prometheus_listen_addr = \":26660\"%prometheus_listen_addr = \":18666\"%" $HOME/.arkeo/config/config.toml
+sed -i -e "s%^address = \"tcp://0.0.0.0:1317\"%address = \"tcp://0.0.0.0:18617\"%; s%^address = \":8080\"%address = \":18680\"%; s%^address = \"0.0.0.0:9090\"%address = \"0.0.0.0:18690\"%; s%^address = \"0.0.0.0:9091\"%address = \"0.0.0.0:18691\"%; s%:8545%:18645%; s%:8546%:18646%; s%:6065%:18665%" $HOME/.arkeo/config/app.toml
+
+# Start service and check the logs
+echo "Starting the arkeod service..."
+arkeod tendermint unsafe-reset-all --home $HOME/.arkeo --keep-addr-book
+sudo systemctl restart arkeod
+
+echo '=============== SETUP FINISHED ==================='
+echo -e 'To check logs: \e[1m\e[32mjournalctl -u arkeod -f -o cat\e[0m'
+echo -e "To check sync status: \e[1m\e[32mcurl -s localhost:18657/status | jq .result.sync_info\e[0m"
